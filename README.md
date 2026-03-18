@@ -1,5 +1,5 @@
 # Pupillometry Clinical Dashboard + LLM Narratives  
-🔗 **Live Demo:** https://pupillometer.streamlit.app
+🔗 **Live Demo:** https://pupillometry.streamlit.app/
 
 A lightweight Streamlit app for exploring synthetic pupillometry data, running ML models, and generating FDA‑style narratives using Claude.
 
