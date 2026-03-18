@@ -43,7 +43,7 @@ pupil_llm_ai/
 ### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
-
+```
 ### 2. Launch the app
 streamlit run app/app.py
 
@@ -52,7 +52,7 @@ To enable FDA‑style narrative generation:
 - In Streamlit Cloud, open Manage App → Secrets
 - Add: ANTHROPIC_API_KEY = "your-key-here"
 
-
+Dependencies:
 pandas==2.2.3
 numpy==1.26.4
 scikit-learn==1.8.0
