@@ -1,5 +1,3 @@
-# Pupillometry Clinical Dashboard + LLM Narratives
-
 # Pupillometry Clinical Dashboard + LLM Narratives  
 🔗 **Live Demo:** https://pupillometer.streamlit.app
 
