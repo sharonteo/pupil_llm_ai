@@ -22,13 +22,20 @@ The app is designed for quick clinical analytics demos and regulatory‑style su
 pupil_llm_ai/
 │
 ├── app/
-│   ├── app.py
-│   ├── utils.py
-│   ├── models/
-│   └── data/
+│   └── app.py
 │
-├── requirements.txt
-└── .streamlit/runtime.txt
+├── data/
+│   └── synthetic_pupillometry.csv
+│
+├── src/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data_generation.py
+│   ├── fda_summary.py
+│   ├── modeling.py
+│
+├── README.md
+└── requirements.txt
 ```
 
 ## How to Run
@@ -37,7 +44,7 @@ pupil_llm_ai/
 ```bash
 pip install -r requirements.txt
 
-2. Launch the app
+### 2. Launch the app
 streamlit run app/app.py
 
 Anthropic API Key (Optional)
@@ -56,4 +63,8 @@ plotly==6.6.0
 streamlit==1.32.0
 altair==4.2.2
 anthropic==0.85.0
-statsmodels==0.14.0   # Not used in app (trendlines removed)
+statsmodels==0.14.0 
+
+Notes
+• 	All data is synthetic (no PHI).
+• 	Designed for clean, reproducible clinical analytics demos.
