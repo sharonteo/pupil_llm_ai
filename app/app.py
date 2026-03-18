@@ -77,7 +77,7 @@ with tab1:
             y="gcs",
             color="severity",
             opacity=0.7,
-            trendline="lowess"
+            trendline=None,
         )
         st.plotly_chart(fig_gcs_npi, use_container_width=True)
 
