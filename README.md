@@ -52,6 +52,7 @@ To enable FDA‑style narrative generation:
 - In Streamlit Cloud, open Manage App → Secrets
 - Add: ANTHROPIC_API_KEY = "your-key-here"
 
+```
 Dependencies:
 pandas==2.2.3
 numpy==1.26.4
@@ -64,7 +65,7 @@ streamlit==1.32.0
 altair==4.2.2
 anthropic==0.85.0
 statsmodels==0.14.0 
-
+```
 Notes
 • 	All data is synthetic (no PHI).
 • 	Designed for clean, reproducible clinical analytics demos.
