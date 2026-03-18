@@ -41,7 +41,7 @@ df = load_or_create_data()
 df_all, model_results = train_all_models(df)
 models_dict = model_results["models"]
 
-st.title("NeurOptics Pupillometry Synthetic Data & ML Dashboard")
+st.title("GenAI‑Enhanced Pupillometry ML Dashboard (Synthetic Data)")
 
 # Tabs
 tab1, tab2, tab3, tab4 = st.tabs([
