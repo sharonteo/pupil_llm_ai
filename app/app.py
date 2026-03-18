@@ -55,7 +55,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # 1. DATASET OVERVIEW
 # ============================================================
 with tab1:
-    st.subheader("First 50 Rows")
+    st.subheader(""Synthetic pupillometry dataset modeled after NeurOptics clinical device outputs. First 50 rows of data"")
     st.dataframe(df_all.head(50))
 
     col1, col2 = st.columns(2)
