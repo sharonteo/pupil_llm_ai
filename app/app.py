@@ -243,6 +243,10 @@ with tab4:
 
     if st.button("Generate FDA-Style Summary"):
         with st.spinner("Calling Claude Sonnet to generate narrative..."):
+
+            # -----------------------------
+            # Build dataset description
+            # -----------------------------
             dataset_description = (
                 f"Synthetic pupillometry dataset with {len(df_all)} rows, "
                 f"{df_all['site_id'].nunique()} sites, and diagnoses including "
@@ -253,10 +257,49 @@ with tab4:
                 "constriction and dilation velocities, latency, and GCS."
             )
 
-            summary_text = generate_fda_style_summary(
-                dataset_description,
-                models_dict
+            # -----------------------------
+            # IMPORT SPLIT FUNCTIONS
+            # -----------------------------
+            from src.fda_summary import (
+                generate_fda_core_summary,
+                generate_performance_interpretation
             )
+
+            # -----------------------------
+            # CALL CLAUDE — PART 1 (Sections 1–3 + 5)
+            # -----------------------------
+            core_text = generate_fda_core_summary(dataset_description)
+
+            # -----------------------------
+            # BUILD PERFORMANCE TABLE (manual, avoids token waste)
+            # -----------------------------
+            mLR = models_dict["Logistic Regression"]["metrics"]
+            mRF = models_dict["Random Forest"]["metrics"]
+            mXGB = models_dict["XGBoost"]["metrics"]
+
+            table_md = f"""
+4. Performance Summary
+
+| Metric | Logistic Regression | Random Forest | XGBoost |
+|--------|----------------------|---------------|----------|
+| Accuracy | {mLR['accuracy']:.3f} | {mRF['accuracy']:.3f} | {mXGB['accuracy']:.3f} |
+| Precision | {mLR['precision']:.3f} | {mRF['precision']:.3f} | {mXGB['precision']:.3f} |
+| Sensitivity (Recall) | {mLR['recall']:.3f} | {mRF['recall']:.3f} | {mXGB['recall']:.3f} |
+| Specificity | {mLR['specificity']:.3f} | {mRF['specificity']:.3f} | {mXGB['specificity']:.3f} |
+| F1 Score | {mLR['f1']:.3f} | {mRF['f1']:.3f} | {mXGB['f1']:.3f} |
+| ROC AUC | {mLR['roc_auc']:.3f} | {mRF['roc_auc']:.3f} | {mXGB['roc_auc']:.3f} |
+"""
+
+            # -----------------------------
+            # CALL CLAUDE — PART 2 (Interpretation ONLY)
+            # -----------------------------
+            perf_text = generate_performance_interpretation(models_dict)
+
+            # -----------------------------
+            # COMBINE EVERYTHING
+            # -----------------------------
+            summary_text = core_text + "\n\n" + table_md + "\n\n" + perf_text
+
             st.markdown(summary_text)
 
     st.info(
