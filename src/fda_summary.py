@@ -26,7 +26,7 @@ def format_metrics_for_prompt(models_dict: Dict[str, Any]) -> str:
 def generate_fda_style_summary(
     dataset_description: str,
     models_dict: Dict[str, Any],
-    max_tokens: int = 2000   # <-- increased from 900
+    max_tokens: int = 4000   # <-- increased from 900
 ) -> str:
     """Generate a structured FDA-style narrative using Claude Sonnet."""
 
@@ -78,6 +78,7 @@ Write the summary using the following required sections:
 
 4. Performance Summary
    - Present the model performance metrics in a table.
+   - Do NOT rewrite the table. Use the table exactly as provided.
    - AFTER the table, write a full narrative interpretation in paragraph form.
    - The narrative MUST interpret:
        * accuracy
