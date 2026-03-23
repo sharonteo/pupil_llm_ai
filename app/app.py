@@ -35,7 +35,8 @@ def load_or_create_data():
 # -----------------------------
 @st.cache_resource
 def train_all_models(df):
-    return load_data_and_train()
+    from src.modeling import train_models
+    return df, train_models(df)
 
 df = load_or_create_data()
 df_all, model_results = train_all_models(df)
@@ -96,6 +97,37 @@ with tab1:
 with tab2:
     st.subheader("Model Performance Metrics")
 
+    # -----------------------------------------
+    # Apply filters from Patient Explorer
+    # -----------------------------------------
+    df_model = df_all.copy()
+
+    sf = st.session_state.get("site_filter", "All")
+    dfi = st.session_state.get("diag_filter", "All")
+    sev = st.session_state.get("severity_filter", "All")
+    pid = st.session_state.get("patient_id_filter", "").strip()
+
+    if sf != "All":
+        df_model = df_model[df_model["site_id"] == sf]
+    if dfi != "All":
+        df_model = df_model[df_model["diagnosis"] == dfi]
+    if sev != "All":
+        df_model = df_model[df_model["severity"] == sev]
+    if pid:
+        try:
+            df_model = df_model[df_model["patient_id"] == int(pid)]
+        except:
+            pass
+
+    # -----------------------------------------
+    # Train models on filtered data
+    # -----------------------------------------
+    _, model_results = train_all_models(df_model)
+    models_dict = model_results["models"]
+
+    # -----------------------------------------
+    # Display metrics
+    # -----------------------------------------
     metrics_rows = []
     for name, info in models_dict.items():
         m = info["metrics"]
@@ -112,7 +144,6 @@ with tab2:
 
     metrics_df = pd.DataFrame(metrics_rows)
 
-    # FIX: Only format numeric columns
     numeric_cols = metrics_df.select_dtypes(include=["float", "int"]).columns
     st.dataframe(
         metrics_df.style.format({col: "{:.3f}" for col in numeric_cols}),
@@ -155,6 +186,12 @@ with tab3:
         )
     with col_filters[3]:
         patient_id_filter = st.text_input("Patient ID (optional)")
+
+    # 🔥 NEW: Save filters globally
+    st.session_state["site_filter"] = site_filter
+    st.session_state["diag_filter"] = diag_filter
+    st.session_state["severity_filter"] = severity_filter
+    st.session_state["patient_id_filter"] = patient_id_filter
 
     df_filtered = df_all.copy()
 
