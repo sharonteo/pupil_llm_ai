@@ -5,6 +5,10 @@ import plotly.express as px
 
 from pathlib import Path
 import sys
+# Ensure project root is in Python path
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT))
+
 
 # Add src/ to Python path
 BASE_DIR = Path(__file__).resolve().parents[1]
