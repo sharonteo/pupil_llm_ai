@@ -41,27 +41,57 @@ def generate_fda_style_summary(
     metrics_text = format_metrics_for_prompt(models_dict)
 
     prompt = f"""
-You are drafting a concise, regulator-facing summary for an FDA submission
-for a pupillometry-based clinical decision support tool.
+You are generating an FDA-style system narrative summary for a machine learning–
+based clinical decision support (CDS) tool. The summary must be formal, structured,
+and written in a regulatory-appropriate tone. Do NOT provide clinical claims or
+treatment recommendations. Focus on system behavior, dataset description, and
+model performance.
 
-Dataset:
+Use the dataset description and model metrics below to produce a comprehensive,
+well-structured narrative.
+
+Dataset Description:
 {dataset_description}
 
-Model performance (binary outcome: GCS severe vs non-severe):
+Model Performance (binary outcome: gcs_severe = GCS ≤ 8):
 {metrics_text}
 
-Write a structured narrative with the following sections:
+Write the summary using the following required sections:
 
-1. Study Overview  
-2. Dataset Characteristics  
-3. Modeling Approach  
-4. Performance Summary  
-   - Interpret sensitivity, specificity, and ROC AUC  
-5. Clinical Risk Considerations and Limitations  
-6. Conclusion and Next Steps  
+1. Study Overview
+   - Describe the purpose of the CDS tool.
+   - State that it supports, not replaces, clinical judgment.
+   - Define the prediction target (gcs_severe).
 
-Use clear, formal language suitable for FDA reviewers. Avoid marketing language.
-Keep the tone objective, evidence-based, and concise.
+2. Dataset Characteristics
+   - State that the dataset is synthetic and contains 5,000 observations.
+   - Describe the simulated multi-site nature (4 sites).
+   - List all available features: demographics, diagnosis, pupillometry parameters.
+   - Explain that findings are preliminary and require validation on real clinical data.
+
+3. Modeling Approach
+   - Describe the three models evaluated (Logistic Regression, Random Forest, XGBoost).
+   - Summarize preprocessing steps (one-hot encoding, scaling, stratified split).
+   - List evaluation metrics used.
+   - Note that no hyperparameter tuning or class-imbalance handling was performed.
+
+4. Performance Summary
+   - Present and interpret the model performance metrics.
+   - Explain accuracy, precision, recall, F1, ROC AUC, and specificity.
+   - Discuss why sensitivity may be modest (class imbalance, threshold, synthetic data).
+
+5. Limitations and Future Work
+   - Emphasize synthetic data limitations.
+   - Mention need for real-world validation.
+   - Note opportunities for improving sensitivity (class weighting, threshold tuning, etc.).
+   - Clarify that the tool does not provide diagnostic or treatment recommendations.
+
+Tone Requirements:
+- Neutral, technical, and FDA-style.
+- Avoid marketing language.
+- Avoid clinical claims.
+- Focus on system description, not clinical interpretation.
+- Use clear section headers and concise paragraphs.
 """
 
     response = client.messages.create(
