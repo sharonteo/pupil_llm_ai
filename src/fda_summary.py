@@ -77,9 +77,21 @@ Write the summary using the following required sections:
    - Note that no hyperparameter tuning or class-imbalance handling was performed.
 
 4. Performance Summary
-   - Present and interpret the model performance metrics.
-   - Explain accuracy, precision, recall, F1, ROC AUC, and specificity.
-   - Discuss why sensitivity may be modest (class imbalance, threshold, synthetic data).
+   - Present the model performance metrics in a table.
+   - AFTER the table, write a full narrative interpretation in paragraph form.
+   - The narrative MUST interpret:
+       * accuracy
+       * precision
+       * recall (sensitivity)
+       * specificity
+       * F1 score
+       * ROC AUC
+   - The narrative MUST explain:
+       * why sensitivity is modest
+       * how class imbalance affects recall
+       * the tradeoff between sensitivity and specificity
+       * limitations of synthetic data
+   - The narrative MUST be at least 6–8 sentences.
 
 5. Limitations and Future Work
    - Emphasize synthetic data limitations.
