@@ -2,15 +2,11 @@ from typing import Dict, Any
 import anthropic
 import os
 
-# Load API key from environment variable
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-
-# Claude model (Sonnet 4–6 depending on your account)
 CLAUDE_MODEL = "claude-sonnet-4-6"
 
 
 def format_metrics_for_prompt(models_dict: Dict[str, Any]) -> str:
-    """Format model metrics into readable text for the LLM prompt."""
     lines = []
     for name, info in models_dict.items():
         m = info["metrics"]
@@ -23,89 +19,32 @@ def format_metrics_for_prompt(models_dict: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def generate_fda_style_summary(
-    dataset_description: str,
-    models_dict: Dict[str, Any],
-    max_tokens: int = 6000   # <-- increased to prevent truncation
-) -> str:
-    """Generate a structured FDA-style narrative using Claude Sonnet."""
-
-    if not ANTHROPIC_API_KEY:
-        return (
-            "⚠️ Anthropic API key not found.\n"
-            "Set ANTHROPIC_API_KEY in your environment to enable FDA narrative generation."
-        )
-
+# ---------------------------------------------------------
+# PART 1 — Generate Sections 1–3 and 5 (NO performance narrative)
+# ---------------------------------------------------------
+def generate_fda_core_summary(dataset_description: str, max_tokens: int = 2500) -> str:
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    metrics_text = format_metrics_for_prompt(models_dict)
 
     prompt = f"""
-You are generating an FDA-style system narrative summary for a machine learning–
-based clinical decision support (CDS) tool. The summary must be formal, structured,
-and written in a regulatory-appropriate tone. Do NOT provide clinical claims or
-treatment recommendations. Focus on system behavior, dataset description, and
-model performance.
+You are generating an FDA-style system narrative summary for a machine learning
+clinical decision support (CDS) tool. Write ONLY Sections 1, 2, 3, and 5.
+DO NOT write Section 4 here.
 
-Use the dataset description and model metrics below to produce a comprehensive,
-well-structured narrative.
+Required sections:
+
+1. Study Overview
+2. Dataset Characteristics
+3. Modeling Approach
+5. Limitations and Future Work
+
+Tone:
+- FDA-style
+- Technical, neutral
+- No clinical claims
+- No treatment recommendations
 
 Dataset Description:
 {dataset_description}
-
-Model Performance (binary outcome: gcs_severe = GCS ≤ 8):
-{metrics_text}
-
-Write the summary using the following required sections:
-
-1. Study Overview
-   - Describe the purpose of the CDS tool.
-   - State that it supports, not replaces, clinical judgment.
-   - Define the prediction target (gcs_severe).
-
-2. Dataset Characteristics
-   - State that the dataset is synthetic and contains 5,000 observations.
-   - Describe the simulated multi-site nature (4 sites).
-   - List all available features: demographics, diagnosis, pupillometry parameters.
-   - Explain that findings are preliminary and require validation on real clinical data.
-
-3. Modeling Approach
-   - Describe the three models evaluated (Logistic Regression, Random Forest, XGBoost).
-   - Summarize preprocessing steps (one-hot encoding, scaling, stratified split).
-   - List evaluation metrics used.
-   - Note that no hyperparameter tuning or class-imbalance handling was performed.
-
-4. Performance Summary
-   - Present the model performance metrics in a table.
-   - Do NOT rewrite, reformat, regenerate, or recreate the table in any form.
-   - Use the table EXACTLY as provided.
-   - After the table, insert a blank line and begin the narrative with the header:
-     "Performance Interpretation:"
-   - The narrative MUST interpret:
-       * accuracy
-       * precision
-       * recall (sensitivity)
-       * specificity
-       * F1 score
-       * ROC AUC
-   - The narrative MUST explain:
-       * why sensitivity is modest
-       * how class imbalance affects recall
-       * the tradeoff between sensitivity and specificity
-       * limitations of synthetic data
-   - The narrative MUST be at least 6–8 sentences.
-
-5. Limitations and Future Work
-   - Emphasize synthetic data limitations.
-   - Mention need for real-world validation.
-   - Note opportunities for improving sensitivity (class weighting, threshold tuning, etc.).
-   - Clarify that the tool does not provide diagnostic or treatment recommendations.
-
-Tone Requirements:
-- Neutral, technical, and FDA-style.
-- Avoid marketing language.
-- Avoid clinical claims.
-- Focus on system description, not clinical interpretation.
-- Use clear section headers and concise paragraphs.
 """
 
     response = client.messages.create(
@@ -115,13 +54,64 @@ Tone Requirements:
         messages=[{"role": "user", "content": prompt}]
     )
 
-    # Debug: check if Claude hit the token limit
-    print("stop_reason:", response.stop_reason)
+    blocks = [b.text for b in response.content if b.type == "text"]
+    return "\n".join(blocks).strip()
 
-    # Anthropic returns content as blocks
-    text_blocks = []
-    for block in response.content:
-        if block.type == "text":
-            text_blocks.append(block.text)
 
-    return "\n".join(text_blocks).strip()
+# ---------------------------------------------------------
+# PART 2 — Generate ONLY the Performance Interpretation
+# ---------------------------------------------------------
+def generate_performance_interpretation(models_dict: Dict[str, Any], max_tokens: int = 1200) -> str:
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    metrics_text = format_metrics_for_prompt(models_dict)
+
+    prompt = f"""
+Write ONLY Section 4: Performance Summary (Interpretation Only).
+
+Use the model metrics below:
+{metrics_text}
+
+Write a section titled:
+"4. Performance Summary"
+
+Then include the table EXACTLY as provided by the user (the app will insert it).
+
+After the table, write a subsection titled:
+"Performance Interpretation"
+
+Write 1–2 paragraphs (8–12 sentences) interpreting:
+- accuracy
+- precision
+- recall (sensitivity)
+- specificity
+- F1 score
+- ROC AUC
+- class imbalance effects
+- sensitivity–specificity tradeoffs
+- synthetic data limitations
+
+Tone:
+- FDA-style
+- Analytical
+- No clinical claims
+"""
+
+    response = client.messages.create(
+        model=CLAUDE_MODEL,
+        max_tokens=max_tokens,
+        temperature=0.2,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    blocks = [b.text for b in response.content if b.type == "text"]
+    return "\n".join(blocks).strip()
+
+
+# ---------------------------------------------------------
+# PART 3 — Combine into final FDA summary
+# ---------------------------------------------------------
+def generate_fda_style_summary(dataset_description: str, models_dict: Dict[str, Any]) -> str:
+    core = generate_fda_core_summary(dataset_description)
+    perf = generate_performance_interpretation(models_dict)
+
+    return core + "\n\n" + perf
