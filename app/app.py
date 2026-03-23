@@ -3,22 +3,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 
-from pathlib import Path
 import sys
-# Ensure project root is in Python path
+from pathlib import Path
+
+# Ensure project root is in Python path (works locally + Streamlit Cloud)
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.append(str(ROOT))
-
-
-# Add src/ to Python path
-BASE_DIR = Path(__file__).resolve().parents[1]
-sys.path.append(str(BASE_DIR))
+sys.path.insert(0, str(ROOT))
 
 from src.data_generation import save_synthetic_data
 from src.modeling import load_data_and_train
-from src.fda_summary import generate_fda_style_summary
+from src.fda_summary import (
+    generate_fda_core_summary,
+    generate_performance_interpretation
+)
 
-DATA_PATH = BASE_DIR / "data" / "synthetic_pupillometry.csv"
+DATA_PATH = ROOT / "data" / "synthetic_pupillometry.csv"
 
 st.set_page_config(
     page_title="NeurOptics Pupillometry LLM System",
