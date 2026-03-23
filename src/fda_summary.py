@@ -26,7 +26,7 @@ def format_metrics_for_prompt(models_dict: Dict[str, Any]) -> str:
 def generate_fda_style_summary(
     dataset_description: str,
     models_dict: Dict[str, Any],
-    max_tokens: int = 900
+    max_tokens: int = 2000   # <-- increased from 900
 ) -> str:
     """Generate a structured FDA-style narrative using Claude Sonnet."""
 
@@ -39,6 +39,7 @@ def generate_fda_style_summary(
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
     metrics_text = format_metrics_for_prompt(models_dict)
+
 
     prompt = f"""
 You are generating an FDA-style system narrative summary for a machine learning–
@@ -101,7 +102,9 @@ Tone Requirements:
         messages=[{"role": "user", "content": prompt}]
     )
 
-    # Anthropic returns content as blocks
+    # Debug: check if Claude hit the token limit
+    print("stop_reason:", response.stop_reason)
+
     text_blocks = []
     for block in response.content:
         if block.type == "text":
