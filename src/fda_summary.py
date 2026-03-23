@@ -1,13 +1,13 @@
 from typing import Dict, Any
 import anthropic
-from pathlib import Path
+import os
 
 # Load API key from environment variable
-import os
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 # Claude model (Sonnet 4–6 depending on your account)
 CLAUDE_MODEL = "claude-sonnet-4-6"
+
 
 def format_metrics_for_prompt(models_dict: Dict[str, Any]) -> str:
     """Format model metrics into readable text for the LLM prompt."""
@@ -26,7 +26,7 @@ def format_metrics_for_prompt(models_dict: Dict[str, Any]) -> str:
 def generate_fda_style_summary(
     dataset_description: str,
     models_dict: Dict[str, Any],
-    max_tokens: int = 4000   # <-- increased from 900
+    max_tokens: int = 6000   # <-- increased to prevent truncation
 ) -> str:
     """Generate a structured FDA-style narrative using Claude Sonnet."""
 
@@ -37,9 +37,7 @@ def generate_fda_style_summary(
         )
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-
     metrics_text = format_metrics_for_prompt(models_dict)
-
 
     prompt = f"""
 You are generating an FDA-style system narrative summary for a machine learning–
@@ -78,8 +76,10 @@ Write the summary using the following required sections:
 
 4. Performance Summary
    - Present the model performance metrics in a table.
-   - Do NOT rewrite the table. Use the table exactly as provided.
-   - AFTER the table, write a full narrative interpretation in paragraph form.
+   - Do NOT rewrite, reformat, regenerate, or recreate the table in any form.
+   - Use the table EXACTLY as provided.
+   - After the table, insert a blank line and begin the narrative with the header:
+     "Performance Interpretation:"
    - The narrative MUST interpret:
        * accuracy
        * precision
@@ -118,6 +118,7 @@ Tone Requirements:
     # Debug: check if Claude hit the token limit
     print("stop_reason:", response.stop_reason)
 
+    # Anthropic returns content as blocks
     text_blocks = []
     for block in response.content:
         if block.type == "text":
