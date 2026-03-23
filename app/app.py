@@ -6,9 +6,12 @@ import plotly.express as px
 import sys
 from pathlib import Path
 
-# Ensure project root is in Python path (works locally + Streamlit Cloud)
+# Ensure project root and src/ are in Python path
 ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(SRC))
 
 from src.data_generation import save_synthetic_data
 from src.modeling import load_data_and_train
@@ -23,7 +26,6 @@ st.set_page_config(
     page_title="NeurOptics Pupillometry LLM System",
     layout="wide"
 )
-
 # -----------------------------
 # Load or generate dataset
 # -----------------------------
